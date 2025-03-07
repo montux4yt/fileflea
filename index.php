@@ -5,6 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
+    /* Basic page styling */
     body {
       background-color: gray;
     }
@@ -26,46 +27,52 @@
 </head>
 <body>
   <center>
+    <!-- Main heading -->
     <h1><u>File-Fly</u></h1>
     <br><br>
+
+    <!-- File input and authentication token fields -->
     <input type="file" id="fileInput">
     <br><br>
     <input type="password" id="authToken" placeholder="Enter authentication token">
     <br><br>
+
+    <!-- Upload button -->
     <button onclick="uploadFile()">Upload</button>
     <br><br>
+
+    <!-- Response display area -->
     <div id="responseArea"></div>
     <br>
+
+    <!-- Copy URL button, hidden by default -->
     <button id="copyButton" style="display:none" onclick="copyUrl()">Copy URL</button>
   </center>
 
   <script>
-    let downloadUrl = '';
+    let downloadUrl = ''; // Stores the URL for copying
 
-    // Function to update or replace messages in a particular "message" element within response area.
-    // In this case, we keep a dedicated progress message element.
+    // Updates or creates a single progress message element
     function updateProgressMessage(message, isError = false) {
       let progressElem = document.getElementById('progressMessage');
       if (!progressElem) {
         progressElem = document.createElement('div');
         progressElem.id = 'progressMessage';
-        // Insert the progress element at the top of the response area.
-        const responseArea = document.getElementById('responseArea');
-        responseArea.append(progressElem);
+        document.getElementById('responseArea').append(progressElem); // Add at top
       }
       progressElem.textContent = message;
       progressElem.className = isError ? 'error' : 'success';
     }
 
-    // Function to append non-progress messages elsewhere.
+    // Appends a new message to the response area
     function displayMessage(message, isError = false) {
-      // Avoid appending progress messages multiple times.
       const msgDiv = document.createElement('div');
       msgDiv.textContent = message;
       msgDiv.className = isError ? 'error' : 'success';
       document.getElementById('responseArea').appendChild(msgDiv);
     }
 
+    // Copies the download URL to clipboard
     function copyUrl() {
       if (navigator.clipboard) {
         navigator.clipboard.writeText(downloadUrl)
@@ -75,7 +82,7 @@
             displayMessage('Failed to copy URL. Please try again.', true);
           });
       } else {
-        // Fallback method if Clipboard API is unavailable.
+        // Fallback for older browsers
         const tempInput = document.createElement('input');
         tempInput.value = downloadUrl;
         document.body.appendChild(tempInput);
@@ -91,15 +98,17 @@
       }
     }
 
+    // Handles file upload process
     async function uploadFile() {
       const fileInput = document.getElementById('fileInput');
       const authToken = document.getElementById('authToken').value;
       const responseArea = document.getElementById('responseArea');
-      responseArea.innerHTML = ''; // Clear previous messages
 
-      // Hide copy button from previous uploads
+      // Clear previous content and hide copy button
+      responseArea.innerHTML = '';
       document.getElementById('copyButton').style.display = 'none';
 
+      // Validate inputs
       if (!fileInput.files[0]) {
         displayMessage('No file selected', true);
         return;
@@ -111,14 +120,14 @@
 
       const file = fileInput.files[0];
 
-      // 1. "Check" phase: Validate using metadata (using fetch API)
-      let metadataFormData = new FormData();
+      // Phase 1: Validate file metadata
+      const metadataFormData = new FormData();
       metadataFormData.append('file_name', file.name);
       metadataFormData.append('file_size', file.size);
       metadataFormData.append('auth_token', authToken);
 
       try {
-        const checkResponse = await fetch('process.php', {
+        const checkResponse = await fetch('filehandler.php', {
           method: 'POST',
           body: metadataFormData
         });
@@ -134,21 +143,22 @@
         return;
       }
 
-      // 2. "Upload" phase using XMLHttpRequest
-      let uploadFormData = new FormData();
+      // Phase 2: Upload the file
+      const uploadFormData = new FormData();
       uploadFormData.append('file', file);
       uploadFormData.append('auth_token', authToken);
 
       const xhr = new XMLHttpRequest();
 
-      // Listen to progress events and update a single element with a numeric percentage.
+      // Track upload progress
       xhr.upload.addEventListener('progress', (e) => {
         if (e.lengthComputable) {
           const percentComplete = Math.round((e.loaded / e.total) * 100);
-          updateProgressMessage('Upload progress: ' + percentComplete + '%');
+          updateProgressMessage(`Upload progress: ${percentComplete}%`);
         }
       });
 
+      // Handle upload completion
       xhr.onreadystatechange = function() {
         if (xhr.readyState === XMLHttpRequest.DONE) {
           if (xhr.status === 200) {
@@ -160,9 +170,9 @@
                 downloadUrl = uploadJson.downloadUrl;
                 updateProgressMessage('Upload successful!');
                 if (uploadJson.expiration) {
-                  displayMessage('Expiry: ' + uploadJson.expiration + ' Days');
+                  displayMessage(`Expiration: ${uploadJson.expiration}`);
                 }
-                displayMessage('URL: ' + downloadUrl);
+                displayMessage(`URL: ${downloadUrl}`);
                 document.getElementById('copyButton').style.display = 'block';
               }
             } catch (e) {
@@ -174,7 +184,7 @@
         }
       };
 
-      xhr.open('POST', 'process.php', true);
+      xhr.open('POST', 'filehandler.php', true);
       xhr.send(uploadFormData);
     }
   </script>
