@@ -1,15 +1,19 @@
 <?php
 // Configuration settings
-$auth_token = 'admin';            // Access passcode
 $max_file_size = 500;             // Maximum file size allowed (in MB)
 $upload_folder = 'uploads/';      // Upload folder
 $enable_cleanup = true;           // Whether cleanup is enabled
 $cleanup_duration = 3;            // Cleanup duration (in days)
+$enable_authentication = true;    // Enable or disable authentication (true/false)
+// Define an array with allowed authentication tokens
+$auth_tokens = [
+    'admin',        // Primary admin token
+    'user1token'   // Additional user token
+];
 
 // If the upload folder doesn't exist, attempt to create it.
 if (!file_exists($upload_folder)) {
     if (!mkdir($upload_folder, 0755, true)) {  // 0755 is a common permission
-        // JSON response for critical configuration errors could be implemented if needed.
         die(json_encode([
             'status'  => 'error',
             'message' => 'Error: Unable to create upload folder'

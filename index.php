@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>File-Fly</title>
+  <title>File-Flea</title>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
@@ -28,14 +28,21 @@
 <body>
   <center>
     <!-- Main heading -->
-    <h1><u>File-Fly</u></h1>
+    <h1><u>File-Flea</u></h1>
     <br><br>
 
-    <!-- File input and authentication token fields -->
+    <!-- File input -->
     <input type="file" id="fileInput">
     <br><br>
-    <input type="password" id="authToken" placeholder="Enter authentication token">
-    <br><br>
+
+    <!-- Authentication token field (shown only if enabled) -->
+    <?php
+    require_once 'config.php'; // Include config to access $enable_authentication
+    if ($enable_authentication) {
+      echo '<input type="password" id="authToken" placeholder="Enter authentication token">';
+      echo '<br><br>';
+    }
+    ?>
 
     <!-- Upload button -->
     <button onclick="uploadFile()">Upload</button>
@@ -101,7 +108,8 @@
     // Handles file upload process
     async function uploadFile() {
       const fileInput = document.getElementById('fileInput');
-      const authToken = document.getElementById('authToken').value;
+      const authTokenInput = document.getElementById('authToken');
+      const authToken = authTokenInput ? authTokenInput.value : ''; // Use empty string if auth is disabled
       const responseArea = document.getElementById('responseArea');
 
       // Clear previous content and hide copy button
@@ -113,10 +121,12 @@
         displayMessage('No file selected', true);
         return;
       }
+      <?php if ($enable_authentication) { ?>
       if (!authToken) {
         displayMessage('Please enter auth_token', true);
         return;
       }
+      <?php } ?>
 
       const file = fileInput.files[0];
 

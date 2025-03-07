@@ -47,17 +47,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     $provided_token = $_POST['auth_token'] ?? '';
-    if ($provided_token !== $auth_token) {
-        sendResponse('error', 'Error: Invalid authentication token');
-    }
+    // Check authentication only if enabled
+    if ($enable_authentication && !in_array($provided_token, $auth_tokens, true)) {
+		sendResponse('error', 'Error: Invalid authentication token');
+	}
 
     // Check phase: Validate metadata
     if (!isset($_FILES['file'])) {
         $file_name = $_POST['file_name'] ?? '';
         $file_size = $_POST['file_size'] ?? 0;
 
-        if (preg_match('/^[\.\/]/', $file_name)) {
-            sendResponse('error', 'Error: File name cannot start with a symbol (., /)');
+        if (preg_match('/^[^a-zA-Z0-9]/', $file_name)) {
+            sendResponse('error', 'Error: File name must start with a letter or number');
         }
         if (file_exists($upload_folder . $file_name)) {
             sendResponse('error', 'Error: File already exists');
@@ -74,8 +75,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $file_name = $file['name'] ?? '';
         $file_size = $file['size'] ?? 0;
 
-        if (preg_match('/^[\.\/]/', $file_name)) {
-            sendResponse('error', 'Error: File name cannot start with a symbol (., /)');
+        if (preg_match('/^[^a-zA-Z0-9]/', $file_name)) {
+            sendResponse('error', 'Error: File name must start with a letter or number');
         }
         if (file_exists($upload_folder . $file_name)) {
             sendResponse('error', 'Error: File already exists');
