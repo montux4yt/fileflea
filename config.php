@@ -1,6 +1,7 @@
 <?php
 // Configuration settings
 $max_file_size = 500;             // Maximum file size allowed (in MB)
+$max_folder_size = 2048;          // Maximum folder size allowed to public except admin(if auth enabled) (in MB)
 $upload_folder = 'uploads/';      // Upload folder
 $enable_cleanup = true;           // Whether cleanup is enabled
 $cleanup_duration = 3;            // Cleanup duration (in days)

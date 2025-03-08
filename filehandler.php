@@ -18,6 +18,18 @@ function sendResponse($status, $message, $downloadUrl = null, $expiration = null
     exit;
 }
 
+// Calculates folder size in MB
+function getFolderSize($folder) {
+    $total_size = 0;
+    $files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($folder));
+    foreach ($files as $file) {
+        if ($file->isFile()) {
+            $total_size += $file->getSize();
+        }
+    }
+    return $total_size / 1048576; // Convert bytes to MB
+}
+
 // Deletes files older than the configured cleanup duration
 function cleanupFiles($upload_folder, $cleanup_duration) {
     if (!is_dir($upload_folder) || !is_writable($upload_folder)) {
@@ -47,10 +59,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     $provided_token = $_POST['auth_token'] ?? '';
+    $is_admin = ($enable_authentication && $provided_token === $auth_tokens[0]);
+
     // Check authentication only if enabled
     if ($enable_authentication && !in_array($provided_token, $auth_tokens, true)) {
-		sendResponse('error', 'Error: Invalid authentication token');
-	}
+        sendResponse('error', 'Error: Invalid authentication token');
+    }
+
+    // Check folder size limit (unless user has admin token)
+    if (!$is_admin) {
+        $current_folder_size = getFolderSize($upload_folder);
+        $new_file_size_mb = (isset($_FILES['file']) ? ($_FILES['file']['size'] / 1048576) : ($_POST['file_size'] / 1048576));
+        if (($current_folder_size + $new_file_size_mb) > $max_folder_size) {
+            sendResponse('error', 'Error: Not enough storage space on server');
+        }
+    }
 
     // Check phase: Validate metadata
     if (!isset($_FILES['file'])) {
@@ -68,7 +91,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         sendResponse('ok', 'Validation passed');
-    } 
+    }
     // Upload phase: Process file
     else {
         $file = $_FILES['file'];
