@@ -2,9 +2,10 @@
 
 ![fileflea-mascot.jpg](fileflea-mascot.jpg)
 
-**File-Flea** is a simple, lightweight PHP-based file upload and sharing system. It allows users to upload files via a web interface, provides a downloadable URL, and includes optional features like authentication and automatic file cleanup. The project is designed for easy deployment and customization.
+**File-Flea** is a simple, lightweight PHP-based file upload and sharing system. It allows users to upload files via a web interface or Terminal/Console, provides a downloadable URL, and includes optional features like authentication and automatic file cleanup. The project is designed for easy deployment and customization.
 
 ## Features
+   - **Terminal/Console Access**: Upload files from terminal or command line.
    - **File Upload**: Upload files with client-side and server-side validation.
    - **Download Links**: Generates unique URLs for downloading uploaded files.
    - **Authentication**: Optional token-based authentication for secure uploads.
@@ -23,7 +24,7 @@
 1. **Clone the Repository**:
       ```bash
       git clone https://github.com/cronin-cyber/fileflea.git
-      cd file-flea
+      cd fileflea
       ```
    - Or download `ZIP` file from Releases.
 
@@ -32,7 +33,7 @@
    - The `config.php` script will attempt to create it automatically if it doesn’t exist.
 
 3. **Configure the Application**:
-   - Open `config.php` and adjust the settings (see [Configuration](Configuration) below).
+   - Open `config.php` and adjust the settings.
    - Example:
       ```php
       $max_file_size = 500; // 500 MB
@@ -51,47 +52,14 @@
 
 ## Usage
 
-1. **Upload a File**:
-   - Visit the main page (`index.php`).
-   - Select a file using the file input.
-   - If authentication is enabled, enter a valid token from `config.php`.
-   - Click "Upload" to start the process.
+1. **Web interface**:
+   - You can access the website and upload your files and download from web browser
+   - e.g., `https://your-web-address/index.php`
 
-2. **Monitor Progress**:
-   - Watch the progress percentage in the response area during upload.
-
-3. **Get the Download URL**:
-   - Upon success, a URL will appear in the response area.
-   - Click "Copy URL" to copy it to your clipboard.
-
-4. **Download a File**:
-   - Paste the URL in a browser to download the file.
-   - Files are served directly via `filehandler.php` with proper MIME types.
-
-## Configuration
-
-Edit `config.php` to customize the application:
-
-   | Variable                | Description                                         | Default Value           |
-   |-------------------------|-----------------------------------------------------|-------------------------|
-   | `$max_file_size`        | Maximum file size allowed (in MB)                   | 500                     |
-   | `$upload_folder`        | Directory for uploaded files                        | 'uploads/'              |
-   | `$enable_cleanup`       | Enable automatic cleanup of old files               | true                    |
-   | `$cleanup_duration`     | Duration in days before files are deleted           | 3                       |
-   | `$enable_authentication`| Enable token-based authentication                   | true                    |
-   | `$auth_tokens`          | Array of valid authentication tokens                | ['admin', 'user1token'] |
-
-### Example `config.php`
-   ```php
-   <?php
-   $max_file_size = 100;             // 100 MB limit
-   $upload_folder = 'uploads/';      // Upload directory
-   $enable_cleanup = true;           // Enable cleanup
-   $cleanup_duration = 7;            // Files expire after 7 days
-   $enable_authentication = false;   // Disable authentication
-   $auth_tokens = ['secret123'];     // Ignored if authentication is disabled
-   ?>
-   ```
+2. **Terminal or Console**:
+   - Upload: `curl -F 'file=@sample.txt' https://your-web-address/filehandler.php`
+   - Upload with Authentication Token: `curl -F 'file=@sample.txt' -F 'auth_token=your-auth-token' https://your-web-address/filehandler.php`
+   - Download: `curl -O https://your-web-address/filehandler.php?file=sample.txt`
 
 ## File Structure
    ```
