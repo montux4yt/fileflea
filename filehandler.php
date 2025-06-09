@@ -128,6 +128,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 // Handle GET requests (download)
 elseif ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['file'])) {
+    ob_start();
     if ($enable_cleanup) {
         cleanupFiles($upload_folder, $cleanup_duration); // Run cleanup if enabled
     }
@@ -142,6 +143,7 @@ elseif ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['file'])) {
         exit;
     }
 
+    ob_clean();
     // Determine MIME type
     $finfo = finfo_open(FILEINFO_MIME_TYPE);
     $mimeType = finfo_file($finfo, $filePath) ?: 'application/octet-stream';
@@ -157,8 +159,7 @@ elseif ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['file'])) {
     header('Content-Length: ' . filesize($filePath));
 
     // Send file
-    ob_clean();
-    flush();
+    ob_end_flush();
     readfile($filePath);
     exit;
 }
